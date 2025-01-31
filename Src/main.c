@@ -56,11 +56,6 @@
 // Real time clock
 #define RTC_BASE 0x40002800
 
-#define GPIO_CRL_OFFSET 0x00
-#define GPIO_ODR_OFFSET 0x0c
-
-#define GPIOB_CRL *(volatile uint32_t *) (GPIOB_BASE + GPIO_CRL_OFFSET)
-
 #define GPIOC_CRL *(volatile uint32_t *) (GPIOC_BASE + 0x00)
 #define GPIOC_CRH *(volatile uint32_t *) (GPIOC_BASE + 0x04)
 #define GPIOC_IDR *(volatile uint32_t *) (GPIOC_BASE + 0x08)

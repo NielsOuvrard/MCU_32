@@ -91,9 +91,9 @@
 
 int main(void)
 {
-	// enable clock for GPIOC & GPIOB (see ENABLING CLOCK)
-	// GPIOC = 0x10
-	// GPIOB = 0x08
+    // enable clock for GPIOC & GPIOB (see ENABLING CLOCK)
+    // GPIOC = 0x10
+    // GPIOB = 0x08
     RCC_APB2ENR |= 0x18;
 
     // clean and set the mode of the pin 13 of the GPIOC
@@ -111,5 +111,5 @@ int main(void)
     GPIOB_CRL |= (CNF_INPUT_PULLUP_DOWN << 10);
 
     /* Loop forever */
-	while (1);
+    while (1);
 }

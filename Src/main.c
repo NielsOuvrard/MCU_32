@@ -86,25 +86,31 @@
 
 int main(void)
 {
-    // enable clock for GPIOC & GPIOB (see ENABLING CLOCK)
+    // enable clock for GPIOC (see ENABLING CLOCK)
     // GPIOC = 0x10
-    // GPIOB = 0x08
-    RCC_APB2ENR |= 0x18;
+    RCC_APB2ENR |= 0x10;
 
-    // clean and set the mode of the pin 13 of the GPIOC
-    GPIOC_CRH &= ~(0x3 << 20);
-    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 20); // with & door, we can only put at 0
+	// OUTPUT 50, PUSH PULL: PC10
+    GPIOC_CRH &= ~(0x3 << 8);
+    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 8);
+    GPIOC_CRH &= ~(0x3 << 10);
+    GPIOC_CRH |= (CNF_OUTPUT_PUSHPULL << 10);
 
-    // clean and set the output type of the pin 13 of the GPIOC
-    GPIOC_CRH &= ~(0x3 << 22);
-    GPIOC_CRH |= (CNF_OUTPUT_OPENDRAIN << 22);
+    // INPUT , PULL DOWN (11 & 12): PC11
+    GPIOC_CRH &= ~(0x3 << 12);
+    GPIOC_CRH |= (MODE_INPUT << 12);
+    GPIOC_CRH &= ~(0x3 << 14);
+    GPIOC_CRH |= (CNF_INPUT_PULLUP_DOWN << 14);
 
-    //...
-    GPIOB_CRL &= ~(0x3 << 8);
-    GPIOB_CRL |= (MODE_INPUT << 8);
-    GPIOB_CRL &= ~(0x3 << 10);
-    GPIOB_CRL |= (CNF_INPUT_PULLUP_DOWN << 10);
+    GPIOC_ODR &= ~(0x1 << 11);
+
 
     /* Loop forever */
-    while (1);
+    while (1) {
+    	if (GPIOC_IDR & (1 << 11)) {
+    		GPIOC_ODR |= 1 << 10;
+    	} else {
+    		GPIOC_ODR &= ~(1 << 10);
+    	}
+     }
 }

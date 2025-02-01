@@ -90,6 +90,8 @@ void delay(uint32_t ms)
         for (volatile uint32_t i = 0; i < 1000; i++);
 }
 
+/*
+// Activity 1
 int main(void)
 {
     // enable clock for GPIOC (see ENABLING CLOCK)
@@ -110,22 +112,118 @@ int main(void)
 
     GPIOC_ODR &= ~(0x1 << 11);
 
-
-
-	// OUTPUT 50: PC13
-    GPIOC_CRH &= ~(0xF << 20);
-    GPIOC_CRH |= (MODE_OUTPUT_10MHZ << 20);
-    GPIOC_CRH |= (CNF_OUTPUT_PUSHPULL << 22);
-
-    /* Loop forever */
     while (1) {
-    	//if (GPIOC_IDR & (1 << 11)) {
-    	// ((odr & GPIO_Pin) << GPIO_NUMBER) | (~odr & GPIO_Pin)
-    	//} else {
-    	//	GPIOC_ODR &= ~(1 << 10);
-    	//}
-
-        GPIOC_ODR ^= (1 << 13);
-        delay(200);
+    	if (GPIOC_IDR & (1 << 11)) {
+      		GPIOC_ODR |= (1 << 10);
+       	} else {
+      		GPIOC_ODR &= ~(1 << 10);
+       	}
      }
 }
+*/
+
+/*
+// Activity 2
+int main(void)
+{
+    // enable clock for GPIOC (see ENABLING CLOCK)
+    // GPIOC = 0x10
+    RCC_APB2ENR |= 0x10;
+
+
+    // OUTPUT 50, OPEN DRAIN: PC10
+    GPIOC_CRH &= ~(0x3 << 8);
+    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 8);
+    GPIOC_CRH &= ~(0x3 << 10);
+    GPIOC_CRH |= (CNF_OUTPUT_OPENDRAIN << 10);
+
+    while (1) {
+        GPIOC_ODR ^= (1 << 10);
+        delay(500);
+    }
+}
+*/
+
+/*
+// Activity 3
+int main(void)
+{
+    // enable clock for GPIOC (see ENABLING CLOCK)
+    // GPIOC = 0x10
+    RCC_APB2ENR |= 0x10;
+
+	// OUTPUT 50, PUSH PULL: PC10
+    GPIOC_CRH &= ~(0x3 << 8);
+    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 8);
+    GPIOC_CRH &= ~(0x3 << 10);
+    GPIOC_CRH |= (CNF_OUTPUT_PUSHPULL << 10);
+
+    // INPUT , PULL UP (11 & 12): PC11
+    GPIOC_CRH &= ~(0x3 << 12);
+    GPIOC_CRH |= (MODE_INPUT << 12);
+    GPIOC_CRH &= ~(0x3 << 14);
+    GPIOC_CRH |= (CNF_INPUT_PULLUP_DOWN << 14);
+
+    GPIOC_ODR |= (0x1 << 11);
+
+    while (1) {
+    	if (GPIOC_IDR & (1 << 11)) {
+            // 200m if pressed
+            delay(200);
+       	} else {
+            // 500m if not pressed
+            delay(500);
+       	}
+        GPIOC_ODR ^= (1 << 10);
+     }
+}
+ */
+
+ /*
+// Activity 4
+int main(void)
+{
+    // enable clock for GPIOC (see ENABLING CLOCK)
+    // GPIOC = 0x10
+    RCC_APB2ENR |= 0x10;
+
+    // OUTPUT 50, OPEN DRAIN: PC10
+    GPIOC_CRH &= ~(0x3 << 8);
+    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 8);
+    GPIOC_CRH &= ~(0x3 << 10);
+    GPIOC_CRH |= (CNF_OUTPUT_OPENDRAIN << 10);
+
+    // OUTPUT 50, OPEN DRAIN: PC11
+    GPIOC_CRH &= ~(0x3 << 12);
+    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 12);
+    GPIOC_CRH &= ~(0x3 << 14);
+    GPIOC_CRH |= (CNF_OUTPUT_OPENDRAIN << 14);
+
+    // OUTPUT 50, OPEN DRAIN: PC12
+    GPIOC_CRH &= ~(0x3 << 16);
+    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 16);
+    GPIOC_CRH &= ~(0x3 << 18);
+    GPIOC_CRH |= (CNF_OUTPUT_OPENDRAIN << 18);
+
+    // OUTPUT 50, OPEN DRAIN: PC13
+    GPIOC_CRH &= ~(0x3 << 20);
+    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 20);
+    GPIOC_CRH &= ~(0x3 << 22);
+    GPIOC_CRH |= (CNF_OUTPUT_OPENDRAIN << 22);
+
+    // INPUT , PULL UP (11 & 12): PC14
+    GPIOC_CRH &= ~(0x3 << 24);
+    GPIOC_CRH |= (MODE_INPUT << 24);
+    GPIOC_CRH &= ~(0x3 << 26);
+    GPIOC_CRH |= (CNF_INPUT_PULLUP_DOWN << 26);
+
+    GPIOC_ODR |= (0x1 << 14);
+
+    while (1) {
+        // El programa deberá de implementar la secuencia de un contador anillo de 4
+        // bits ascendente mientras el pulsador no se presione, de otro modo, contará
+        // de forma descendente. El retardo de cada cambio es de 250ms
+        GPIOC_ODR ^= (1 << 10);
+    }
+}
+ */

@@ -84,6 +84,12 @@
 #define CNF_INPUT_PULLUP_DOWN 10
 #define CNF_RESERVED 11
 
+void delay(uint32_t ms)
+{
+    for (volatile uint32_t j = 0; j < ms; j++)
+        for (volatile uint32_t i = 0; i < 1000; i++);
+}
+
 int main(void)
 {
     // enable clock for GPIOC (see ENABLING CLOCK)
@@ -105,12 +111,21 @@ int main(void)
     GPIOC_ODR &= ~(0x1 << 11);
 
 
+
+	// OUTPUT 50: PC13
+    GPIOC_CRH &= ~(0xF << 20);
+    GPIOC_CRH |= (MODE_OUTPUT_10MHZ << 20);
+    GPIOC_CRH |= (CNF_OUTPUT_PUSHPULL << 22);
+
     /* Loop forever */
     while (1) {
-    	if (GPIOC_IDR & (1 << 11)) {
-    		GPIOC_ODR |= 1 << 10;
-    	} else {
-    		GPIOC_ODR &= ~(1 << 10);
-    	}
+    	//if (GPIOC_IDR & (1 << 11)) {
+    	// ((odr & GPIO_Pin) << GPIO_NUMBER) | (~odr & GPIO_Pin)
+    	//} else {
+    	//	GPIOC_ODR &= ~(1 << 10);
+    	//}
+
+        GPIOC_ODR ^= (1 << 13);
+        delay(200);
      }
 }

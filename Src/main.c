@@ -17,6 +17,7 @@
  */
 
 #include <stdint.h>
+#include "stm32f103xb.h"
 // ctrl + space = get library help
 
 // RCC

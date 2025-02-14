@@ -15,250 +15,225 @@
  *
  ******************************************************************************
  */
+/* Private includes -----------------------------------------------*/
+#include "stm32f103xb.h"
+#include <cstdint>
 
-#include <cstdlib>
-#include <stdint.h>
-// ctrl + space = get library help
+/* Private defines ------------------------------------------------*/
 
-// RCC
-#define RCC_BASE 0x40021000
+/* Private macros -------------------------------------------------*/
+#define BIT(n)				(1UL << (n))
 
-// GPIO
-#define GPIOA_BASE 0x40010800
-#define GPIOB_BASE 0x40010C00
-#define GPIOC_BASE 0x40011000
-#define GPIOD_BASE 0x40011400
-#define GPIOE_BASE 0x40011800
-#define GPIOF_BASE 0x40011C00
-#define GPIOG_BASE 0x40012000
+#define __enable_irq() 		__asm volatile ("cpsie i" : : : "memory")
+#define __disable_irq() 	__asm volatile ("cpsid i" : : : "memory")
 
-// ADC
-#define ADC1_BASE 0x40012400
-#define ADC2_BASE 0x40012800
+/* Private typedefs ------------------------------------------------*/
 
-// TIM
-#define TIM1_BASE 0x40012C00
-#define TIM2_BASE 0x40000000
+/* Private variables -----------------------------------------------*/
 
-// I2C
-#define I2C2_BASE 0x40005800
-#define I2C1_BASE 0x40005400
+/* Private prototype function --------------------------------------*/
+void SysReset_Check(void);
+void SystemClock_Config(void);
+void MX_GPIO_Init(void);
+void MX_EXTI_Init(void);
+void EXTI1_IRQHandler(void);
 
-// UART
-#define UART5_BASE 0x40005000
-#define UART4_BASE 0x40004C00
-#define USART3_BASE 0x40004800
-#define USART2_BASE 0x40004400
+void delay_ms(uint32_t ms);
 
-// I2S
-#define SPI3_BASE 0x40003C00
-#define SPI2_BASE 0x40003800
+uint32_t counter = 0;
 
-// Real time clock
-#define RTC_BASE 0x40002800
-
-#define GPIOC_CRL *(volatile uint32_t *) (GPIOC_BASE + 0x00)
-#define GPIOC_CRH *(volatile uint32_t *) (GPIOC_BASE + 0x04)
-#define GPIOC_IDR *(volatile uint32_t *) (GPIOC_BASE + 0x08)
-#define GPIOC_ODR *(volatile uint32_t *) (GPIOC_BASE + 0x0C)
-#define GPIOC_BSR *(volatile uint32_t *) (GPIOC_BASE + 0x10)
-#define GPIOC_BRR *(volatile uint32_t *) (GPIOC_BASE + 0x14)
-#define GPIOC_LCKR *(volatile uint32_t *) (GPIOC_BASE + 0x18)
-
-#define RCC_APB2ENR *(volatile uint32_t *)(RCC_BASE + 0x18)
-#define RCC_APB1ENR *(volatile uint32_t *)(RCC_BASE + 0x1C)
-
-#define MODE_INPUT 00
-#define MODE_OUTPUT_10MHZ 01
-#define MODE_OUTPUT_2MHZ 10
-#define MODE_OUTPUT_50MHZ 11
-
-// Output type
-#define CNF_OUTPUT_PUSHPULL 00
-#define CNF_OUTPUT_OPENDRAIN 01
-#define CNF_AF_PUSHPULL 10
-#define CNF_AF_OPENDRAIN 11
-
-// Input type
-#define CNF_INPUT_ANALOG 00
-#define CNF_INPUT_FLOATING 01
-#define CNF_INPUT_PULLUP_DOWN 10
-#define CNF_RESERVED 11
-
-void delay(uint32_t ms)
-{
-    for (volatile uint32_t j = 0; j < ms; j++)
-        for (volatile uint32_t i = 0; i < 1000; i++);
-}
-
-void system_clock_config()
-{
-	//RCC->CR &= ~(0x1 << 18); // set HSE come from cristal quartz
-
-	// enable HSE clock
-	RCC->CR |= (0x1 << 16);
-	while (!(RCC->CR & (0x1 << 17))); // waiting for HSY OK
-
-
-	RCC->CFGR &= ~(0x1 << 17);
-	RCC->CFGR |= (0x1 << 16);
-	RCC->CFGR &= ~(0xF << 18); // clear PLL bits
-	RCC->CFGR |= (0x7 << 18); // set PLL bits
-
-
-	// enable Prefetch buffer
-	FLASH->ACR |= (0x1 << 4); // enable prefetch buffer
-	while (!(FLASH->ACR & (0x1 << 0))); // waiting for prefetch buffer ready
-
-    // set wait states
-	FLASH->ACR &= ~(0xF << 0); // clear latency bits
-	FLASH->ACR |= (0x1 << 0); // set latency bits
-
-	// bit 17, en 0
-	// bit 16 en 1
-	RCC->APB1ENR &= ~(0x1 << 17);
-	RCC->APB1ENR &= ~(0x1 << 16);
-	RCC->APB1ENR |= (0x1 << 16);
-
-}
-
-
-
-// Activity 1
+/* Main program ----------------------------------------------------*/
 int main(void)
 {
-    // enable clock for GPIOC (see ENABLING CLOCK)
-    // GPIOC = 0x10
-    RCC_APB2ENR |= 0x10;
+	/* Check system reset */
+	SysReset_Check();
 
-	// OUTPUT 50, PUSH PULL: PC10
-    GPIOC_CRH &= ~(0x3 << 8);
-    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 8);
-    GPIOC_CRH &= ~(0x3 << 10);
-    GPIOC_CRH |= (CNF_OUTPUT_PUSHPULL << 10);
+	/* System Clock configuration */
+	SystemClock_Config();
 
-    GPIOA->CRL &= ~(0x3 << 0);
+	/* GPIO initialization */
+	MX_GPIO_Init();
 
-    // INPUT , PULL DOWN (11 & 12): PC11
-    GPIOC_CRH &= ~(0x3 << 12);
-    GPIOC_CRH |= (MODE_INPUT << 12);
-    GPIOC_CRH &= ~(0x3 << 14);
-    GPIOC_CRH |= (CNF_INPUT_PULLUP_DOWN << 14);
+	/* EXTI initialization */
+	MX_EXTI_Init();
 
-    GPIOC_ODR &= ~(0x1 << 11);
-
-    while (1) {
-    	if (GPIOC_IDR & (1 << 11)) {
-      		GPIOC_ODR |= (1 << 10);
-       	} else {
-      		GPIOC_ODR &= ~(1 << 10);
-       	}
-     }
+	/* Application loop forever */
+	while (1)
+	{
+	    EXTI1_IRQHandler();
+	}
 }
 
 
-/*
-// Activity 2
-int main(void)
+/* Private function definition -------------------------------------*/
+void SysReset_Check(void)
 {
-    // enable clock for GPIOC (see ENABLING CLOCK)
-    // GPIOC = 0x10
-    RCC_APB2ENR |= 0x10;
+	if( RCC->CSR & BIT(31) )
+	{
+		// Handle low-power reset
+	}
+	else if( RCC->CSR & BIT(30) )
+	{
+		// Handle WWDG reset
+	}
+	else if( RCC->CSR & BIT(29) )
+	{
+		// Handle IWDG reset
+	}
+	else if( RCC->CSR & BIT(28) )
+	{
+		// Handle Software reset
+	}
+	else if( RCC->CSR & BIT(27) )
+	{
+		// Handle POR/PDR reset
+	}
+	else if( RCC->CSR & BIT(26) )
+	{
+		// Handle NRST pin reset
+	}
 
-
-    // OUTPUT 50, OPEN DRAIN: PC10
-    GPIOC_CRH &= ~(0x3 << 8);
-    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 8);
-    GPIOC_CRH &= ~(0x3 << 10);
-    GPIOC_CRH |= (CNF_OUTPUT_OPENDRAIN << 10);
-
-    while (1) {
-        GPIOC_ODR ^= (1 << 10);
-        delay(500);
-    }
+	// Clear reset flags
+	RCC->CSR |= BIT(24);
 }
-*/
 
-/*
-// Activity 3
-int main(void)
+void SystemClock_Config(void)
 {
-    // enable clock for GPIOC (see ENABLING CLOCK)
-    // GPIOC = 0x10
-    RCC_APB2ENR |= 0x10;
+    /* 1. Enable HSE clock */
+	RCC->CR |= (0x01 << 16);				// Enable HSE signal
+	while( !(RCC->CR & (0x01 << 17)) ); 	// Polling for HSE Ready
 
-	// OUTPUT 50, PUSH PULL: PC10
-    GPIOC_CRH &= ~(0x3 << 8);
-    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 8);
-    GPIOC_CRH &= ~(0x3 << 10);
-    GPIOC_CRH |= (CNF_OUTPUT_PUSHPULL << 10);
+	/* 2. Enable pre-fetch buffer */
+	FLASH->ACR |= (0x01 << 4);			// Enable pre-fetch
+	while( !(FLASH->ACR & (0x01 << 5)) );// Polling for pre-fetch buffer enable
 
-    // INPUT , PULL UP (11 & 12): PC11
-    GPIOC_CRH &= ~(0x3 << 12);
-    GPIOC_CRH |= (MODE_INPUT << 12);
-    GPIOC_CRH &= ~(0x3 << 14);
-    GPIOC_CRH |= (CNF_INPUT_PULLUP_DOWN << 14);
+	/* 3. Set wait states */
+	FLASH->ACR &= ~(0x07);			// Reset wait states
+	FLASH->ACR |= (0x01 << 1);			// 2 wait states
 
-    GPIOC_ODR |= (0x1 << 11);
+	/* 4. Configure prescaler, multiplier and clock MUX. */
+	// Prescalers
+	RCC->CFGR &= ~(0x07 << 8);	// APB1CLK = HCLK/1 = 72MHz (APB1 <= 36MHz)
+	RCC->CFGR |= (0x04 << 8);	// APB1CLK = HCLK/2 = 36MHz
+	RCC->CFGR &= ~(0x07 << 11);	// APB2CLK = HCLK/1 = 72MHz (APB1 <= 72MHz)
+	RCC->CFGR &= ~(0x01 << 22); 		// USBCLK = PLLCLK / 1.5 = 48MHz
+	RCC->CFGR |= ~(0x03 << 14); // ADCCLK = HCLK / 2 = 36MHz
+	RCC->CFGR &= ~(0x0F << 4);	// HCLK = SYSCLK / 1 = 72MHz
+	// MUX
+	RCC->CFGR &= ~(0x01 << 17);		// HSE not divided for PLL entry (8MHz * 1)
+	RCC->CFGR |= (0x01 << 16);		// HSE entry on PLL clock to multiply (8MHz)
+	RCC->CFGR &= ~(0x0F << 18); // Clear PLL multiple (PLLMUL = x2)
+	RCC->CFGR |= (0x07 << 18);	// PLLMUL = x9 (8MHz * 9 = 72MHz)
 
-    while (1) {
-    	if (GPIOC_IDR & (1 << 11)) {
-            // 200m if pressed
-            delay(200);
-       	} else {
-            // 500m if not pressed
-            delay(500);
-       	}
-        GPIOC_ODR ^= (1 << 10);
-     }
+	/* 5. Enable PLL*/
+	RCC->CR |= BIT(24);
+	while( !(RCC->CR & BIT(25)) ); // Polling for PLL locked
+
+	/* 6. Set clock source */
+	RCC->CFGR &= ~(0x03); 				// Clear SW
+	RCC->CFGR |= BIT(1);				// SYSCLK = PLLCLK = 72MHz
+	while (!(RCC->CFGR & (0x02 << 2) ));// Polling for system clock switch status
 }
- */
 
- /*
-// Activity 4
-int main(void)
+void MX_GPIO_Init(void)
 {
-    // enable clock for GPIOC (see ENABLING CLOCK)
-    // GPIOC = 0x10
-    RCC_APB2ENR |= 0x10;
+	// Enable clock for GPIOA, GPIOD peripherals
+	RCC->APB2ENR |= BIT(2) | BIT(5);
 
-    // OUTPUT 50, OPEN DRAIN: PC10
-    GPIOC_CRH &= ~(0x3 << 8);
-    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 8);
-    GPIOC_CRH &= ~(0x3 << 10);
-    GPIOC_CRH |= (CNF_OUTPUT_OPENDRAIN << 10);
-
-    // OUTPUT 50, OPEN DRAIN: PC11
-    GPIOC_CRH &= ~(0x3 << 12);
-    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 12);
-    GPIOC_CRH &= ~(0x3 << 14);
-    GPIOC_CRH |= (CNF_OUTPUT_OPENDRAIN << 14);
-
-    // OUTPUT 50, OPEN DRAIN: PC12
-    GPIOC_CRH &= ~(0x3 << 16);
-    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 16);
-    GPIOC_CRH &= ~(0x3 << 18);
-    GPIOC_CRH |= (CNF_OUTPUT_OPENDRAIN << 18);
-
-    // OUTPUT 50, OPEN DRAIN: PC13
-    GPIOC_CRH &= ~(0x3 << 20);
-    GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 20);
-    GPIOC_CRH &= ~(0x3 << 22);
-    GPIOC_CRH |= (CNF_OUTPUT_OPENDRAIN << 22);
-
-    // INPUT , PULL UP (11 & 12): PC14
-    GPIOC_CRH &= ~(0x3 << 24);
-    GPIOC_CRH |= (MODE_INPUT << 24);
-    GPIOC_CRH &= ~(0x3 << 26);
-    GPIOC_CRH |= (CNF_INPUT_PULLUP_DOWN << 26);
-
-    GPIOC_ODR |= (0x1 << 14);
-
-    while (1) {
-        // El programa deberá de implementar la secuencia de un contador anillo de 4
-        // bits ascendente mientras el pulsador no se presione, de otro modo, contará
-        // de forma descendente. El retardo de cada cambio es de 250ms
-        GPIOC_ODR ^= (1 << 10);
-    }
+	// PA5 as push-pull output (2 MHz)
+	GPIOA->CRL &= ~(0x0F << 20); // Clear MODE5 & CNF5
+	GPIOA->CRL |= BIT(21);
 }
- */
+
+void MX_EXTI_Init(void)
+{
+	// Enable EXTI clock by enabling the AFIO clock (APB2)
+	RCC->APB2ENR |= (0x01 << 0);
+
+	// PA0 -> 10 -> 0A
+	// PB0 -> 18 -> 1A
+	// Connect EXTI0 line to PA0/PB0 on the AFIO's EXTICRs registers
+	AFIO->EXTICR[0] &= ~(0x0F); // Clear EXTI0
+	AFIO->EXTICR[0] |= (0x00); // Connect EXTI0 to PA0
+	// AFIO->EXTICR[0] |= (0x01 << 4); // Connect EXTI0 to PB0
+
+	// Disable the 'rising edge' trigger on EXTI RTSR register
+	EXTI->RTSR &= (0x00);
+
+	// Enable/disable the 'falling edge' trigger on EXTI FTSR register
+	EXTI->FTSR |= (0x00);
+
+	// Setup EXTI1 line as an interrupt on EXTI IMR register
+
+	/* Set priority: The priority field holds an 8-bit priority value.
+	 * The lower the value, the greater the priority of the
+	 * corresponding interrupt. The processor implements only bits[7:4]
+	 * of each field, bits[3:0] read as zero and ignore writes.
+	 *
+	 * Although the NVIC_IPx are 32-bit registers (x = 0,...,16)
+	 * the library define these registers as an array of 8-bit
+	 * registers, where the location of the interrupt source is the
+	 * index on the array. In this case the location of EXTI1 in the
+	 * interrupt vector table is 7.
+	*/
+
+	/* Enable EXTI1 interrupt: NVIC ISER1-ISER3 are read-set register, i.e.,
+	 * writing zero does not take effect on the register value.
+	 * Location	Set-enable	Clear-enable	Set-pending	Clear-pending	Active Bit
+	 * 0-31 	ISER[0] 	ICER[0] I		SPR[0] 		ICPR[0] 		IABR[0]
+	 * 32-63 	ISER[1] 	ICER[1] 		ISPR[1] 	ICPR[1] 		IABR[1]
+	 * 64-80 	ISER[2] 	ICER[2] 		ISPR[2] 	ICPR[2] 		IABR[2]
+	 *
+	 * Since EXTI1 is located at position 7, to enable its interrupt
+	 * we need to set bit 7 of ISER[0].
+	 */
+	EXTI->ISER[0] |= (0x01 << 6); // Enable EXTI1 interrupt
+	// for the practice, set EXIT1 instead of EXTI0
+
+}
+
+
+void delay_ms(uint32_t ms)
+{
+	// Declared as volatile to avoid compiler optimization
+	volatile uint32_t cycles = 0;
+	while(ms--)
+	{
+		/*
+		 * This for loop takes 10 cycles per iteration
+		 * The outer while takes 4 cycles per iteration
+		 * Ideally, for a delay of 1ms we need a for loop
+		 * from 0 to Fclk / 1000 clock cycles if we assume
+		 * that each iteration takes 1 clock cycle.
+		 *
+		 * If Fclk = 8MHz -> 8MHz/1000 = 8000
+		 *
+		 * However, at low-level, each iteration of the for
+		 * loop takes around 10 clock cycles, therefore
+		 * instead of iterating up to Fclk / 1000, it
+		 * should be Fclk / (1000*CYCLES_PER_ITER), i.e.,
+		 * 8MHz/(1000*10) = 800
+		 */
+		for (cycles = 0; cycles < 800; cycles++)
+		{
+		}
+	}
+
+}
+
+
+
+
+/* Interrupt Handlers ------------------------------------------------*/
+void EXTI1_IRQHandler(void)
+{
+	// Check EXTI1 pending flag
+	if (EXTI->PR & BIT(0))
+	{
+		// Clear the EXTI interrupt status
+		EXTI->PR = BIT(0);
+
+		counter++;
+
+	}
+}

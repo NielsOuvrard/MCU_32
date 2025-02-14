@@ -16,6 +16,7 @@
  ******************************************************************************
  */
 
+#include <cstdlib>
 #include <stdint.h>
 // ctrl + space = get library help
 
@@ -90,7 +91,39 @@ void delay(uint32_t ms)
         for (volatile uint32_t i = 0; i < 1000; i++);
 }
 
-/*
+void system_clock_config()
+{
+	//RCC->CR &= ~(0x1 << 18); // set HSE come from cristal quartz
+
+	// enable HSE clock
+	RCC->CR |= (0x1 << 16);
+	while (!(RCC->CR & (0x1 << 17))); // waiting for HSY OK
+
+
+	RCC->CFGR &= ~(0x1 << 17);
+	RCC->CFGR |= (0x1 << 16);
+	RCC->CFGR &= ~(0xF << 18); // clear PLL bits
+	RCC->CFGR |= (0x7 << 18); // set PLL bits
+
+
+	// enable Prefetch buffer
+	FLASH->ACR |= (0x1 << 4); // enable prefetch buffer
+	while (!(FLASH->ACR & (0x1 << 0))); // waiting for prefetch buffer ready
+
+    // set wait states
+	FLASH->ACR &= ~(0xF << 0); // clear latency bits
+	FLASH->ACR |= (0x1 << 0); // set latency bits
+
+	// bit 17, en 0
+	// bit 16 en 1
+	RCC->APB1ENR &= ~(0x1 << 17);
+	RCC->APB1ENR &= ~(0x1 << 16);
+	RCC->APB1ENR |= (0x1 << 16);
+
+}
+
+
+
 // Activity 1
 int main(void)
 {
@@ -103,6 +136,8 @@ int main(void)
     GPIOC_CRH |= (MODE_OUTPUT_50MHZ << 8);
     GPIOC_CRH &= ~(0x3 << 10);
     GPIOC_CRH |= (CNF_OUTPUT_PUSHPULL << 10);
+
+    GPIOA->CRL &= ~(0x3 << 0);
 
     // INPUT , PULL DOWN (11 & 12): PC11
     GPIOC_CRH &= ~(0x3 << 12);
@@ -120,7 +155,7 @@ int main(void)
        	}
      }
 }
-*/
+
 
 /*
 // Activity 2

@@ -17,7 +17,6 @@
  */
 /* Private includes -----------------------------------------------*/
 #include "stm32f103xb.h"
-#include <cstdint>
 
 /* Private defines ------------------------------------------------*/
 
@@ -139,10 +138,16 @@ void MX_GPIO_Init(void)
 {
 	// Enable clock for GPIOA, GPIOD peripherals
 	RCC->APB2ENR |= BIT(2) | BIT(5);
+	RCC->APB2ENR |= BIT(10);
 
 	// PA5 as push-pull output (2 MHz)
 	GPIOA->CRL &= ~(0x0F << 20); // Clear MODE5 & CNF5
 	GPIOA->CRL |= BIT(21);
+
+	// Step 2: Configure PC13 as a general-purpose output (max speed 50 MHz)
+    GPIOC->CRH &= ~(0xF << 20);  // Clear the mode and configuration bits for PC13
+    GPIOC->CRH |= (0x3 << 20);   // Set PC13 to output mode, max speed 50 MHz
+    GPIOC->CRH &= ~(0xC << 20);  // Set PC13 to general-purpose output push-pull
 }
 
 void MX_EXTI_Init(void)
@@ -187,7 +192,7 @@ void MX_EXTI_Init(void)
 	 * Since EXTI1 is located at position 7, to enable its interrupt
 	 * we need to set bit 7 of ISER[0].
 	 */
-	EXTI->ISER[0] |= (0x01 << 6); // Enable EXTI1 interrupt
+	//EXTI->ISER[0] |= (0x01 << 6); // Enable EXTI1 interrupt
 	// for the practice, set EXIT1 instead of EXTI0
 
 }
@@ -218,7 +223,6 @@ void delay_ms(uint32_t ms)
 		{
 		}
 	}
-
 }
 
 
@@ -233,7 +237,12 @@ void EXTI1_IRQHandler(void)
 		// Clear the EXTI interrupt status
 		EXTI->PR = BIT(0);
 
-		counter++;
+        GPIOC->ODR ^= (1 << 13);
+        delay_ms(10000);
 
+		counter++;
+	} else {
+    	GPIOC->ODR ^= (1 << 13);
+        delay_ms(1000);
 	}
 }

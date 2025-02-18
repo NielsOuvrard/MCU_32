@@ -1,2 +1,7 @@
-../Src/main.c:87:6:delay	2
-../Src/main.c:91:5:main	1
+../Src/main.c:45:5:main	1
+../Src/main.c:68:6:SysReset_Check	6
+../Src/main.c:99:6:SystemClock_Config	5
+../Src/main.c:137:6:MX_GPIO_Init	1
+../Src/main.c:153:6:MX_EXTI_Init	1
+../Src/main.c:201:6:delay_ms	3
+../Src/main.c:232:6:EXTI1_IRQHandler	2

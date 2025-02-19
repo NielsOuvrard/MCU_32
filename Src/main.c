@@ -138,16 +138,16 @@ void MX_GPIO_Init(void)
 {
 	// Enable clock for GPIOA, GPIOD peripherals
 	RCC->APB2ENR |= BIT(2) | BIT(5);
-	RCC->APB2ENR |= BIT(10);
+	RCC->APB2ENR |= 0x10;
 
 	// PA5 as push-pull output (2 MHz)
 	GPIOA->CRL &= ~(0x0F << 20); // Clear MODE5 & CNF5
 	GPIOA->CRL |= BIT(21);
 
-	// Step 2: Configure PC13 as a general-purpose output (max speed 50 MHz)
-    GPIOC->CRH &= ~(0xF << 20);  // Clear the mode and configuration bits for PC13
-    GPIOC->CRH |= (0x3 << 20);   // Set PC13 to output mode, max speed 50 MHz
-    GPIOC->CRH &= ~(0xC << 20);  // Set PC13 to general-purpose output push-pull
+   	// LED
+    GPIOC->CRH &= ~(0xF << 20);
+    GPIOC->CRH |= (0x01 << 20);
+    GPIOC->CRH |= (0x00 << 22);
 }
 
 void MX_EXTI_Init(void)
@@ -242,7 +242,7 @@ void EXTI1_IRQHandler(void)
 
 		counter++;
 	} else {
-    	GPIOC->ODR ^= (1 << 13);
+       	GPIOC->ODR ^= (1 << 13);
         delay_ms(1000);
 	}
 }

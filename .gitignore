@@ -54,3 +54,8 @@
 
 # Ignore test output
 /test-output/
+
+
+.DS_Store
+*.s
+*.ld

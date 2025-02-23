@@ -8,6 +8,7 @@
 
 /* Private includes -----------------------------------------------*/
 #include "stm32f103xb.h"
+#include "lcd.h"
 
 /* Private defines ------------------------------------------------*/
 
@@ -99,6 +100,8 @@ void LCD_Init(uint8_t dbWidth)
 
 		// put E for 1 sec
 		GPIOB->ODR |= (0x01 << 5); // E = 1
+		delay_ms(1);
+		GPIOB->ODR &= ~(0x01 << 5); // E = 0
 
 		// Wait for more than 4.1 ms
 		delay_ms(5);
@@ -114,6 +117,13 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
 		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
 
+
+
+		// put E for 1 sec
+		GPIOB->ODR |= (0x01 << 5); // E = 1
+		delay_ms(1);
+		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+
 		// Wait for more than 100 µs
 		delay_ms(1);
 
@@ -127,6 +137,13 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0
 		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
 		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
+
+
+
+		// put E for 1 sec
+		GPIOB->ODR |= (0x01 << 5); // E = 1
+		delay_ms(1);
+		GPIOB->ODR &= ~(0x01 << 5); // E = 0
 
 	}
 	else if(dbWidth == LCD_4B_INTERFACE)
@@ -178,7 +195,7 @@ uint8_t LCD_Read(uint8_t isData)
 /* Main program ----------------------------------------------------*/
 int main(void)
 {
-    LCD_Init();
+    LCD_Init(LCD_8B_INTERFACE);
 
 
 	/* Application loop forever */

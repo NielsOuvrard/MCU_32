@@ -30,4 +30,4 @@ typedef enum spped_clock
     CLOCK_72MHz
 } spped_clock;
 
-void set_clk_speed(spped_clock speed, bool is_HSI);
+void set_clk_speed(spped_clock speed, bool is_HSE);

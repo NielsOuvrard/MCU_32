@@ -9,6 +9,7 @@
 /* Private includes -----------------------------------------------*/
 #include "stm32f103xb.h"
 #include "lcd.h"
+#include "clock_configuration.h"
 
 /* Private defines ------------------------------------------------*/
 
@@ -22,6 +23,7 @@
 
 /* Private prototype function --------------------------------------*/
 
+int mhz_clk = 8; // by default, 8MHz
 
 void delay_ms(uint32_t ms)
 {
@@ -49,6 +51,7 @@ void delay_ms(uint32_t ms)
         }
     }
 }
+
 
 /* Exported reference function -------------------------------------*/
 void LCD_Init(uint8_t dbWidth)
@@ -196,6 +199,7 @@ uint8_t LCD_Read(uint8_t isData)
 int main(void)
 {
     LCD_Init(LCD_8B_INTERFACE);
+	set_clk_speed(CLOCK_8MHz, false);
 
 
 	/* Application loop forever */

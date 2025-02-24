@@ -11,6 +11,7 @@
 
 /* Exported includes -----------------------------------------------*/
 #include "stm32f103xb.h"
+#include "time.h"
 
 /* Exported defines ------------------------------------------------*/
 // Pinout

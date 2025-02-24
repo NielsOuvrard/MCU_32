@@ -5,8 +5,6 @@
  *      Author: nielsouvrard
  */
 
-
-#include "stm32f103xb.h"
 #include "clock_configuration.h"
 
 void configure_PLL(spped_clock speed, bool is_HSE)

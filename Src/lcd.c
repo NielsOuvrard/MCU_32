@@ -6,9 +6,7 @@
  */
 
 
-#include "stm32f103xb.h"
 #include "lcd.h"
-#include "clock_configuration.h"
 
 #define BIT(n)				(1UL << (n))
 #define __NOP() __asm volatile ("nop")  // Lasts 1 clock cycle of the STM32f103

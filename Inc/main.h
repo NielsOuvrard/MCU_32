@@ -11,5 +11,6 @@
 #include "stm32f103xb.h"
 #include "lcd.h"
 #include "clock_configuration.h"
+#include "time.h"
 
 #endif /* MAIN_H_ */

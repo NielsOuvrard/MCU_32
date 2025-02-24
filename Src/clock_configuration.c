@@ -1,8 +1,10 @@
 /*
-* clock_configuration.c
-*
-* Author: nielsouvrard
-*/
+ * clock_configuration.c
+ *
+ *  Created on: Feb 23, 2025
+ *      Author: nielsouvrard
+ */
+
 
 #include "stm32f103xb.h"
 #include "clock_configuration.h"

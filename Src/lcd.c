@@ -2,58 +2,18 @@
  * lcd.c
  *
  *  Created on: Feb 20, 2025
- *      Author: User123
+ *      Author: nielsouvrard
  */
 
 
-/* Private includes -----------------------------------------------*/
 #include "stm32f103xb.h"
 #include "lcd.h"
 #include "clock_configuration.h"
 
-/* Private defines ------------------------------------------------*/
-
-/* Private macros -------------------------------------------------*/
 #define BIT(n)				(1UL << (n))
 #define __NOP() __asm volatile ("nop")  // Lasts 1 clock cycle of the STM32f103
 
-/* Private typedefs ------------------------------------------------*/
 
-/* Private variables -----------------------------------------------*/
-
-/* Private prototype function --------------------------------------*/
-
-int mhz_clk = 8; // by default, 8MHz
-
-void delay_ms(uint32_t ms)
-{
-    // Declared as volatile to avoid compiler optimization
-    volatile uint32_t cycles = 0;
-    while(ms--)
-    {
-        /*
-         * This for loop takes 10 cycles per iteration
-         * The outer while takes 4 cycles per iteration
-         * Ideally, for a delay of 1ms we need a for loop
-         * from 0 to Fclk / 1000 clock cycles if we assume
-         * that each iteration takes 1 clock cycle.
-         *
-         * If Fclk = 8MHz -> 8MHz/1000 = 8000
-         *
-         * However, at low-level, each iteration of the for
-         * loop takes around 10 clock cycles, therefore
-         * instead of iterating up to Fclk / 1000, it
-         * should be Fclk / (1000*CYCLES_PER_ITER), i.e.,
-         * 8MHz/(1000*10) = 800
-         */
-        for (cycles = 0; cycles < 800; cycles++)
-        {
-        }
-    }
-}
-
-
-/* Exported reference function -------------------------------------*/
 void LCD_Init(uint8_t dbWidth)
 {
 	// Configure GPIOs ============
@@ -93,15 +53,13 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
 		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
 		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
-		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
-		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0
-		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
-		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
+		GPIOA->ODR |= (0x01 << 3); // DB3 = 0
+		GPIOA->ODR |= (0x01 << 2); // DB2 = 0
+		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
+		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
 
 
-		// put E for 1 sec
+		// put E for 1ms
 		GPIOB->ODR |= (0x01 << 5); // E = 1
 		delay_ms(1);
 		GPIOB->ODR &= ~(0x01 << 5); // E = 0
@@ -115,14 +73,14 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
 		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
 		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
-		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0
-		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
-		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
+		GPIOA->ODR |= (0x01 << 3); // DB3 = 0
+		GPIOA->ODR |= (0x01 << 2); // DB2 = 0
+		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
+		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
 
 
 
-		// put E for 1 sec
+		// put E for 1ms
 		GPIOB->ODR |= (0x01 << 5); // E = 1
 		delay_ms(1);
 		GPIOB->ODR &= ~(0x01 << 5); // E = 0
@@ -136,14 +94,14 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
 		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
 		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
-		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0
-		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
-		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
+		GPIOA->ODR |= (0x01 << 3); // DB3 = 0
+		GPIOA->ODR |= (0x01 << 2); // DB2 = 0
+		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
+		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
 
 
 
-		// put E for 1 sec
+		// put E for 1ms
 		GPIOB->ODR |= (0x01 << 5); // E = 1
 		delay_ms(1);
 		GPIOB->ODR &= ~(0x01 << 5); // E = 0
@@ -191,19 +149,4 @@ uint8_t LCD_Read(uint8_t isData)
 	// Set DB pins to high
 
 	return dout;
-}
-
-/* Private reference function --------------------------------------*/
-
-/* Main program ----------------------------------------------------*/
-int main(void)
-{
-    LCD_Init(LCD_8B_INTERFACE);
-	set_clk_speed(CLOCK_8MHz, false);
-
-
-	/* Application loop forever */
-	while (1)
-	{
-	}
 }

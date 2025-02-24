@@ -74,6 +74,12 @@ void set_clk_speed(spped_clock speed, bool is_HSE)
 		// Step 5: Select PLL as system clock
 		RCC->CFGR |= 0x02; // SW = 2, PLL
 		while (!(RCC->CFGR & (0x02 << 2))); // Polling SW status
+	} else if (is_HSE) {
+		RCC->CFGR |= 0x01; // SW = 1, HSE
+		while (!(RCC->CFGR & (0x01 << 2))); // Polling SW status
+	} else {
+		RCC->CFGR &= ~(0x03); // SW = 0, HSI
+		while (RCC->CFGR & (0x03 << 2)); // Polling SW status
 	}
 
 	// Step 6: Configure AHB, APB1, and APB2 prescalers

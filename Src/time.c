@@ -35,7 +35,7 @@ void delay_ms (uint32_t ms)
         * should be Fclk / (1000*CYCLES_PER_ITER), i.e.,
         * XMHz/(1000*10) = X00
         */
-        for (cycles = 0; cycles < mhz_clk * 100; cycles++)
+        for (cycles = 0; cycles < 800; cycles++)
         {
         }
     }

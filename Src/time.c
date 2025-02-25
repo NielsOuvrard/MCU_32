@@ -7,11 +7,11 @@
 
 #include "time.h"
 
- int mhz_clk = 8; // by default, 8MHz
+volatile uint32_t mhz_clk = 800; // by default, 8MHz
 
 void change_clk (int clk)
 {
-    mhz_clk = clk;
+    mhz_clk = clk * 100;
 }
 
 void delay_ms (uint32_t ms)
@@ -35,9 +35,9 @@ void delay_ms (uint32_t ms)
         * should be Fclk / (1000*CYCLES_PER_ITER), i.e.,
         * XMHz/(1000*10) = X00
         */
+        // should be hard-coded because of the number of cycles
         for (cycles = 0; cycles < 800; cycles++)
         {
         }
     }
 }
- 

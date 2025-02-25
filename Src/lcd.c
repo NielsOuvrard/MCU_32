@@ -19,21 +19,21 @@ void LCD_Init(uint8_t dbWidth)
 	RCC->APB2ENR |= BIT(3); // Enable GPIOB clock
 
 	// PB5 - PB7, output mode, max speed 10 MHz, push-pull
-	GPIOB->CRL &= ~(0xFFF); // Clear CNF5, MODE5, CNF6, MODE6, CNF7, MODE7
-	GPIOB->CRL |= (0b01 << 20); // output mode, max speed 10 MHz, 5
-	GPIOB->CRL |= (0b11 << 24); // output mode, max speed 10 MHz, 6
-	GPIOB->CRL |= (0b11 << 28); // output mode, max speed 10 MHz, 7
+	GPIOB->CRL &= ~(0xFFF << 20); // Clear CNF5, MODE5, CNF6, MODE6, CNF7, MODE7
+	GPIOB->CRL |= (0b10 << 20); // output mode, max speed 2 MHz, 5
+	GPIOB->CRL |= (0b10 << 24); // output mode, max speed 2 MHz, 6
+	GPIOB->CRL |= (0b10 << 28); // output mode, max speed 2 MHz, 7
 
 	// PA0 - PA7, output mode, max speed 10 MHz, push-pull
-	GPIOA->CRL &= ~(0xFFFFFFFF); // Clear CNF0, MODE0, CNF1, MODE1, CNF2, MODE2, CNF3, MODE3
-	GPIOB->CRL |= (0b01 << 0); // output mode, max speed 10 MHz, 0
-	GPIOB->CRL |= (0b11 << 4); // output mode, max speed 10 MHz, 1
-	GPIOB->CRL |= (0b11 << 8); // output mode, max speed 10 MHz, 2
-	GPIOB->CRL |= (0b11 << 12); // output mode, max speed 10 MHz, 3
-	GPIOB->CRL |= (0b11 << 10); // output mode, max speed 10 MHz, 4
-	GPIOB->CRL |= (0b11 << 14); // output mode, max speed 10 MHz, 5
-	GPIOB->CRL |= (0b11 << 18); // output mode, max speed 10 MHz, 6
-	GPIOB->CRL |= (0b11 << 22); // output mode, max speed 10 MHz, 7
+	GPIOA->CRL &= ~(0xFFFFFFFF); // Clear CNF0, MODE0, CNF1, MODE1, CNF2, MODE2, CNF3, MODE7
+	GPIOA->CRL |= (0b10 << 0); // output mode, max speed 2 MHz, 0
+	GPIOA->CRL |= (0b10 << 4); // output mode, max speed 2 MHz, 1
+	GPIOA->CRL |= (0b10 << 8); // output mode, max speed 2 MHz, 2
+	GPIOA->CRL |= (0b10 << 12); // output mode, max speed 2 MHz, 3
+	GPIOA->CRL |= (0b10 << 16); // output mode, max speed 2 MHz, 4
+	GPIOA->CRL |= (0b10 << 20); // output mode, max speed 2 MHz, 5
+	GPIOA->CRL |= (0b10 << 24); // output mode, max speed 2 MHz, 6
+	GPIOA->CRL |= (0b10 << 28); // output mode, max speed 2 MHz, 7
 
 	// Perform init sequence: see https://cdn.sparkfun.com/assets/9/5/f/7/b/HD44780.pdf
 	// See pag.
@@ -41,25 +41,32 @@ void LCD_Init(uint8_t dbWidth)
 	{
 		// 8-bit interface: see pag. 22, and 45
 		// rise VCC to 4.5V, wait 40ms
-		delay_ms(40);
+		delay_ms(50);
 
 		// RS = 0, R/W = 0, DB7 = 0, DB6 = 0, DB5 = 1, DB4 = 1...
 		// B7 = 0, B6 = 0,  A7 = 0,  A6 = 0,  A5 = 1,  A4 = 1
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+        // PB5 -> E
 		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
 		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
 		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
 		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-		GPIOA->ODR |= (0x01 << 3); // DB3 = 0
-		GPIOA->ODR |= (0x01 << 2); // DB2 = 0
-		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
-		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
-
+		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
+		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0
+		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
+		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
 
 		// put E for 1ms
 		GPIOB->ODR |= (0x01 << 5); // E = 1
-		delay_ms(1);
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
 		GPIOB->ODR &= ~(0x01 << 5); // E = 0
 
 		// Wait for more than 4.1 ms
@@ -76,11 +83,17 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
 		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
 
-
-
 		// put E for 1ms
 		GPIOB->ODR |= (0x01 << 5); // E = 1
-		delay_ms(1);
+		
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
 		GPIOB->ODR &= ~(0x01 << 5); // E = 0
 
 		// Wait for more than 100 µs
@@ -97,13 +110,189 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
 		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
 
+		// put E for 1ms
+		GPIOB->ODR |= (0x01 << 5); // E = 1
+		
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		GPIOB->ODR &= ~(0x01 << 5); // E = 0
 
+		// Wait for more than 100 µs
+		delay_ms(1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // NOW THE SETTINGS
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        // LCD_Write(0x38, 1);
+
+    
+		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
+		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+
+		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
+		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
+		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
+		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
+
+		GPIOA->ODR |= (0x01 << 3); // DB3 = 1 // 1 because 2*16
+		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0 // 0 Because 5 * 8 chars
+		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
+		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
 
 		// put E for 1ms
 		GPIOB->ODR |= (0x01 << 5); // E = 1
-		delay_ms(1);
+		
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
 		GPIOB->ODR &= ~(0x01 << 5); // E = 0
 
+        
+		// Wait for more than 100 µs
+		delay_ms(1);
+        
+		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
+		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
+		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
+		GPIOA->ODR &= ~(0x01 << 5); // DB5 = 0
+		GPIOA->ODR &= ~(0x01 << 4); // DB4 = 0
+		GPIOA->ODR |= (0x01 << 3); // DB3 = 1
+		GPIOA->ODR |= (0x01 << 2); // DB2 = 0 // D -> Set the entire display
+		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
+		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
+
+        
+		// put E for 1ms
+		GPIOB->ODR |= (0x01 << 5); // E = 1
+		
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+
+        
+		// Wait for more than 100 µs
+		delay_ms(1);
+        
+		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
+		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
+		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
+		GPIOA->ODR &= ~(0x01 << 5); // DB5 = 0
+		GPIOA->ODR &= ~(0x01 << 4); // DB4 = 0
+		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
+		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0
+		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
+		GPIOA->ODR |= (0x01 << 0); // DB0 = 1
+
+        
+		// put E for 1ms
+		GPIOB->ODR |= (0x01 << 5); // E = 1
+		
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+
+        
+		// Wait for more than 100 µs
+		delay_ms(1);
+        
+		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
+		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
+		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
+		GPIOA->ODR &= ~(0x01 << 5); // DB5 = 0
+		GPIOA->ODR &= ~(0x01 << 4); // DB4 = 0
+		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
+		GPIOA->ODR |= (0x01 << 2); // DB2 = 1
+		GPIOA->ODR |= (0x01 << 1); // DB1 = 1 // I/D = 1: Increment
+		GPIOA->ODR |= (0x01 << 0); // DB0 = 1 // S = 1: Accompanies display shift
+
+		// put E for 1ms
+		GPIOB->ODR |= (0x01 << 5); // E = 1
+		
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+
+		// Wait for more than 100 µs
+		delay_ms(1);
+
+
+		GPIOB->ODR |= (0x01 << 7); // RS = 0
+		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+
+		GPIOA->ODR &= ~(0xFF);
+		GPIOA->ODR |= (0x30);
+
+		// put E for 1ms
+		GPIOB->ODR |= (0x01 << 5); // E = 1
+
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		__NOP();
+		GPIOB->ODR &= ~(0x01 << 5); // E = 0
 	}
 	else if(dbWidth == LCD_4B_INTERFACE)
 	{
@@ -147,4 +336,27 @@ uint8_t LCD_Read(uint8_t isData)
 	// Set DB pins to high
 
 	return dout;
+}
+
+
+void LCD_Goto_XY (int x, int y)
+{
+    // RS 0
+    // RW 0
+    GPIOB->ODR &= ~(0x01 << 7);
+    GPIOB->ODR &= ~(0x01 << 6);
+
+    // DB7 1
+    // adress to the cursor (0x00 -> 0x0F) (0x40 -> 0x4F)
+    uint8_t value = 0b10000000;
+    value &= x;
+    if (y) {
+        value &= 0x40;
+    }
+
+}
+
+void LCD_Print(const char *str)
+{
+
 }

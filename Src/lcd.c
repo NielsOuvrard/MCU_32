@@ -11,6 +11,24 @@
 #define BIT(n)				(1UL << (n))
 #define __NOP() __asm volatile ("nop")  // Lasts 1 clock cycle of the STM32f103
 
+static void LCD_trigger_enable_pin(void)
+{
+	// put E for 1ms
+	GPIOB->ODR |= (0x01 << 5); // E = 1
+
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+	
+	GPIOB->ODR &= ~(0x01 << 5); // E = 0
+}
+
 
 void LCD_Init(uint8_t dbWidth)
 {
@@ -24,8 +42,8 @@ void LCD_Init(uint8_t dbWidth)
 	GPIOB->CRL |= (0b10 << 24); // output mode, max speed 2 MHz, 6
 	GPIOB->CRL |= (0b10 << 28); // output mode, max speed 2 MHz, 7
 
-	// PA0 - PA7, output mode, max speed 10 MHz, push-pull
-	GPIOA->CRL &= ~(0xFFFFFFFF); // Clear CNF0, MODE0, CNF1, MODE1, CNF2, MODE2, CNF3, MODE7
+	// PA0 - PA7, output mode, max speed 2 MHz, push-pull
+	GPIOA->CRL &= ~(0xFFFFFFFF); // Clear CNF0, MODE0, CNF1, MODE1, CNF2, MODE2, CNF3, MODE3
 	GPIOA->CRL |= (0b10 << 0); // output mode, max speed 2 MHz, 0
 	GPIOA->CRL |= (0b10 << 4); // output mode, max speed 2 MHz, 1
 	GPIOA->CRL |= (0b10 << 8); // output mode, max speed 2 MHz, 2
@@ -42,257 +60,115 @@ void LCD_Init(uint8_t dbWidth)
 		// 8-bit interface: see pag. 22, and 45
 		// rise VCC to 4.5V, wait 40ms
 		delay_ms(50);
+		uint16_t db_value = 0x3F;
 
 		// RS = 0, R/W = 0, DB7 = 0, DB6 = 0, DB5 = 1, DB4 = 1...
 		// B7 = 0, B6 = 0,  A7 = 0,  A6 = 0,  A5 = 1,  A4 = 1
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
         // PB5 -> E
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
-		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
-		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0
-		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
-		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
+		GPIOA->ODR &= ~(0xFF);
+		GPIOA->ODR |= db_value; // 0x30
 
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+		LCD_trigger_enable_pin();
 
 		// Wait for more than 4.1 ms
 		delay_ms(5);
 
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
-		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-		GPIOA->ODR |= (0x01 << 3); // DB3 = 0
-		GPIOA->ODR |= (0x01 << 2); // DB2 = 0
-		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
-		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
-
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
 		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+		GPIOA->ODR &= ~(0xFF);
+		GPIOA->ODR |= db_value; // 0x30
+
+		LCD_trigger_enable_pin();
 
 		// Wait for more than 100 µs
 		delay_ms(1);
 
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
-		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-		GPIOA->ODR |= (0x01 << 3); // DB3 = 0
-		GPIOA->ODR |= (0x01 << 2); // DB2 = 0
-		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
-		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
-
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
 		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+		GPIOA->ODR &= ~(0xFF);
+		GPIOA->ODR |= db_value; // 0x30
+
+		LCD_trigger_enable_pin();
 
 		// Wait for more than 100 µs
 		delay_ms(1);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // NOW THE SETTINGS
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+	
+        // ! NOW THE SETTINGS
+		
         // LCD_Write(0x38, 1);
-
     
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
 
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
-		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-
-		GPIOA->ODR |= (0x01 << 3); // DB3 = 1 // 1 because 2*16
-		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0 // 0 Because 5 * 8 chars
-		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
-		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
-
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
+		db_value = 0x30; // function set
+		uint8_t n = 1; // N = 1: 2 lines, N = 0: 1 line
+		uint8_t f = 0; // F = 0: 5x8 dots, F = 1: 5x10 dots
+		db_value |= (n << 3);
+		db_value |= (f << 2);
 		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
-
-        
-		// Wait for more than 100 µs
-		delay_ms(1);
-        
-		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
-		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR &= ~(0x01 << 5); // DB5 = 0
-		GPIOA->ODR &= ~(0x01 << 4); // DB4 = 0
-		GPIOA->ODR |= (0x01 << 3); // DB3 = 1
-		GPIOA->ODR |= (0x01 << 2); // DB2 = 0 // D -> Set the entire display
-		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
-		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
-
-        
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
-		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
-
-        
-		// Wait for more than 100 µs
-		delay_ms(1);
-        
-		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
-		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR &= ~(0x01 << 5); // DB5 = 0
-		GPIOA->ODR &= ~(0x01 << 4); // DB4 = 0
-		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
-		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0
-		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
-		GPIOA->ODR |= (0x01 << 0); // DB0 = 1
-
-        
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
-		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
-
-        
-		// Wait for more than 100 µs
-		delay_ms(1);
-        
-		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
-		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR &= ~(0x01 << 5); // DB5 = 0
-		GPIOA->ODR &= ~(0x01 << 4); // DB4 = 0
-		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
-		GPIOA->ODR |= (0x01 << 2); // DB2 = 1
-		GPIOA->ODR |= (0x01 << 1); // DB1 = 1 // I/D = 1: Increment
-		GPIOA->ODR |= (0x01 << 0); // DB0 = 1 // S = 1: Accompanies display shift
-
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
-		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
-
-		// Wait for more than 100 µs
-		delay_ms(1);
-
-
-		GPIOB->ODR |= (0x01 << 7); // RS = 0
-		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-
 		GPIOA->ODR &= ~(0xFF);
-		GPIOA->ODR |= (0x30);
+		GPIOA->ODR |= db_value;
 
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
+		LCD_trigger_enable_pin();
 
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+        
+		// * Display off
+		// Wait for more than 100 µs
+		delay_ms(1);
+        
+		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
+		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+
+		db_value = 0x08; // display off
+		uint8_t d = 0; // D = 1: Display on, D = 0: Display off
+		uint8_t c = 0; // C = 1: Cursor on, C = 0: Cursor off
+		uint8_t b = 0; // B = 1: Cursor blink, B = 0: Cursor doesn't blink
+		db_value |= (d << 2);
+		db_value |= (c << 1);
+		db_value |= b;
+		GPIOA->ODR &= ~(0xFF);
+		GPIOA->ODR |= db_value;
+
+		LCD_trigger_enable_pin();
+        
+		// Wait for more than 100 µs
+		delay_ms(1);
+        
+		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
+		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+
+		// * Display clear
+		db_value = 0x01; // clear display
+		
+		GPIOA->ODR &= ~(0xFF);
+		GPIOA->ODR |= 1;
+
+		LCD_trigger_enable_pin();
+
+        
+		// Wait for more than 100 µs
+		delay_ms(1);
+        
+		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
+		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+
+		// * Entry mode set
+		db_value = 0x04; // entry mode set
+		uint8_t id = 1; // I/D = 1: Increment, I/D = 0: Decrement
+		uint8_t s = 1; // S = 1: Accompanies display shift, S = 0: No display shift
+		db_value |= (id << 1);
+		db_value |= s;
+		
+		GPIOA->ODR &= ~(0xFF);
+		GPIOA->ODR |= db_value;
+
+		LCD_trigger_enable_pin();
+
+		delay_ms(1);
 	}
 	else if(dbWidth == LCD_4B_INTERFACE)
 	{
@@ -304,16 +180,30 @@ void LCD_Init(uint8_t dbWidth)
 void LCD_Write(uint8_t data, uint8_t isCmd)
 {
 	// Write mode (RW = 0)
-
-	// Write data/instruction (RS = 1/0)
+	GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+	
+    // Set RS = isCmd (0 for command, 1 for data)
+    if (isCmd) {
+        GPIOB->ODR &= ~(0x01 << 7); // RS = 0 (command)
+    } else {
+        GPIOB->ODR |= (0x01 << 7); // RS = 1 (data)
+    }
 
 	// Configure DB pins as outputs
+	GPIOA->CRL &= ~(0xFFFFFFFF); // Clear CNF0, MODE0, CNF1, MODE1, CNF2, MODE2, CNF3, MODE7
+	GPIOA->CRL |= (0x11111111); // General purpose output push-pull
 
 	// Write data into DB pins
+	GPIOA->ODR &= ~(0xFF);
+	GPIOA->ODR |= data;
 
 	// Send EN pulse: see Bus Timing Characteristics on pag. 49
+	LCD_trigger_enable_pin();
+
+	delay_ms(1);
 
 	// Set DB pins to high
+	//GPIOA->ODR |= 0xFF;
 }
 
 // Read sequence
@@ -322,18 +212,32 @@ uint8_t LCD_Read(uint8_t isData)
 	uint8_t dout = 0x00;
 
 	// Read mode (RW = 1)
+	GPIOB->ODR |= (0x01 << 6); // R/W = 1
+
+    // Set RS = isData (1 for data, 0 for command/busy flag)
+    if (isData) {
+        GPIOB->ODR |= (0x01 << 7); // RS = 1
+    } else {
+        GPIOB->ODR &= ~(0x01 << 7); // RS = 0
+    }
 
 	// Read data/busy&DDRAM (RW = 1/0)
+	GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 
 	// Configure DB pins as floating inputs
+	GPIOA->CRL &= ~(0xFFFFFFFF); // Clear CNF0, MODE0, CNF1, MODE1, CNF2, MODE2, CNF3, MODE7
 
 	// Pull EN to HIGH: see Bus Timing Characteristics on pag. 49
+	GPIOB->ODR |= (0x01 << 5); // E = 1
 
 	// Read data from DB pins
+	dout = GPIOA->IDR;
 
 	// Pull EN to LOW: see Bus Timing Characteristics on pag. 49
+	GPIOB->ODR &= ~(0x01 << 5); // E = 0
 
 	// Set DB pins to high
+	GPIOA->ODR &= ~(0xFF);
 
 	return dout;
 }

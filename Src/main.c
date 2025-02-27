@@ -6,6 +6,7 @@
  */
 
 #include "main.h"
+#define __NOP() __asm volatile ("nop")  // Lasts 1 clock cycle of the STM32f103
 
 int main(void)
 {
@@ -17,10 +18,19 @@ int main(void)
     change_clk(8);
     LCD_Init(LCD_8B_INTERFACE);
 
+	//LCD_Write('H', 1);
+
+	// char str[] = "Hello, World!";
+	// uint8_t index = 0;
 
 	/* Application loop forever */
 	while (1)
 	{
+		//LCD_Write(str[index], 1);
+		// index++;
+		// if (str[index] == '\0') {
+		// 	index = 0;
+		// }
 		GPIOC->ODR ^= (1 << 13);
 		delay_ms(1000);
 	}

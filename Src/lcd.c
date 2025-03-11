@@ -183,32 +183,6 @@ void LCD_Init(uint8_t dbWidth)
 
 		// Wait for more than 100 µs
 		delay_ms(1);
-
-
-		GPIOB->ODR |= (0x01 << 7); // RS = 0
-		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-
-		GPIOA->ODR &= ~(0xFF);
-		GPIOA->ODR |= (0x30);
-
-		LCD_trigger_enable_pin();
-	
-		
-		// Wait for more than 100 µs
-		delay_ms(1);
-
-
-		GPIOB->ODR |= (0x01 << 7); // RS = 0
-		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-
-		GPIOA->ODR &= ~(0xFF);
-		GPIOA->ODR |= (0x31);
-
-		LCD_trigger_enable_pin();
-
-		// Wait for more than 100 µs
-		delay_ms(1);
-
 	}
 	else if(dbWidth == LCD_4B_INTERFACE)
 	{
@@ -219,20 +193,6 @@ void LCD_Init(uint8_t dbWidth)
 // Write sequence
 void LCD_Write(uint8_t data, uint8_t isCmd)
 {
-	// Write mode (RW = 0)
-	GPIOB->ODR |= (0x01 << 7); // RS = 0
-	GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-
-	GPIOA->ODR &= ~(0xFF);
-	GPIOA->ODR |= (0x30);
-
-	LCD_trigger_enable_pin();
-
-	
-	// Wait for more than 100 µs
-	delay_ms(1);
-
-
 	GPIOB->ODR |= (0x01 << 7); // RS = 0
 	GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
 
@@ -240,6 +200,8 @@ void LCD_Write(uint8_t data, uint8_t isCmd)
 	GPIOA->ODR |= (data);
 
 	LCD_trigger_enable_pin();
+	// Wait for more than 100 µs
+	delay_ms(1);
 
 	// Write data/instruction (RS = 1/0)
 

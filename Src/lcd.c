@@ -11,6 +11,23 @@
 #define BIT(n)				(1UL << (n))
 #define __NOP() __asm volatile ("nop")  // Lasts 1 clock cycle of the STM32f103
 
+static void LCD_trigger_enable_pin(void)
+{
+	// put E for 1ms
+	GPIOB->ODR |= (0x01 << 5); // E = 1
+
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+	
+	GPIOB->ODR &= ~(0x01 << 5); // E = 0
+}
 
 void LCD_Init(uint8_t dbWidth)
 {
@@ -57,18 +74,8 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
 		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
 
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
-
+		LCD_trigger_enable_pin();
+	
 		// Wait for more than 4.1 ms
 		delay_ms(5);
 
@@ -83,18 +90,7 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
 		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
 
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
-		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+		LCD_trigger_enable_pin();
 
 		// Wait for more than 100 µs
 		delay_ms(1);
@@ -110,18 +106,7 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
 		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
 
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
-		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+		LCD_trigger_enable_pin();
 
 		// Wait for more than 100 µs
 		delay_ms(1);
@@ -172,18 +157,7 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
 		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
 
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
-		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+		LCD_trigger_enable_pin();
 
         
 		// Wait for more than 100 µs
@@ -201,18 +175,7 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
 
         
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
-		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+		LCD_trigger_enable_pin();
 
         
 		// Wait for more than 100 µs
@@ -230,18 +193,7 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR |= (0x01 << 0); // DB0 = 1
 
         
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
-		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+		LCD_trigger_enable_pin();
 
         
 		// Wait for more than 100 µs
@@ -258,18 +210,7 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR |= (0x01 << 1); // DB1 = 1 // I/D = 1: Increment
 		GPIOA->ODR |= (0x01 << 0); // DB0 = 1 // S = 1: Accompanies display shift
 
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
-		
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+		LCD_trigger_enable_pin();
 
 		// Wait for more than 100 µs
 		delay_ms(1);
@@ -281,18 +222,20 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOA->ODR &= ~(0xFF);
 		GPIOA->ODR |= (0x30);
 
-		// put E for 1ms
-		GPIOB->ODR |= (0x01 << 5); // E = 1
+		LCD_trigger_enable_pin();
+	
+		
+		// Wait for more than 100 µs
+		delay_ms(1);
 
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		__NOP();
-		GPIOB->ODR &= ~(0x01 << 5); // E = 0
+
+		GPIOB->ODR |= (0x01 << 7); // RS = 0
+		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+
+		GPIOA->ODR &= ~(0xFF);
+		GPIOA->ODR |= (0x31);
+
+		LCD_trigger_enable_pin();
 	}
 	else if(dbWidth == LCD_4B_INTERFACE)
 	{

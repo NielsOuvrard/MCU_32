@@ -17,17 +17,8 @@ int main(void)
     change_clk(8);
     LCD_Init(LCD_8B_INTERFACE);
 
-	LCD_Write('H', 0);
-	LCD_Write('e', 0);
-	LCD_Write('l', 0);
-	LCD_Write('l', 0);
-	LCD_Write('o', 0);
-	LCD_Write(' ', 0);
-	LCD_Write('W', 0);
-	LCD_Write('o', 0);
-	LCD_Write('r', 0);
-	LCD_Write('l', 0);
-	LCD_Write('d', 0);
+	LCD_Print("Hello, World!");
+	LCD_Print("Thixxxxxx");
 
 
 	/* Application loop forever */

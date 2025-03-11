@@ -94,4 +94,6 @@ void LCD_Write(uint8_t data, uint8_t isCmd);
 // See pag. 24-25
 uint8_t LCD_Read(uint8_t isData);
 
+void LCD_Print(const char *str);
+
 #endif /* LCD_H_ */

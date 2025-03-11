@@ -193,7 +193,7 @@ void LCD_Init(uint8_t dbWidth)
 // Write sequence
 void LCD_Write(uint8_t data, uint8_t isCmd)
 {
-	GPIOB->ODR |= (0x01 << 7); // RS = 0
+	GPIOB->ODR |= (0x01 << 7); // RS = 1
 	GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
 
 	GPIOA->ODR &= ~(0xFF);
@@ -256,5 +256,8 @@ void LCD_Goto_XY (int x, int y)
 
 void LCD_Print(const char *str)
 {
-
+	for (int i = 0; str[i] != '\0'; i++)
+	{
+		LCD_Write(str[i], 0);
+	}
 }

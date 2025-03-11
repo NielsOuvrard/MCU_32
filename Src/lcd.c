@@ -31,26 +31,15 @@ static void LCD_trigger_enable_pin(void)
 
 void LCD_Init(uint8_t dbWidth)
 {
-	// Configure GPIOs ============
-	RCC->APB2ENR |= BIT(2); // Enable GPIOA clock
-	RCC->APB2ENR |= BIT(3); // Enable GPIOB clock
+	// Configure GPIOs ============	RCC->APB2ENR |= BIT(2) | BIT(3); // Enable GPIOA and GPIOB clock
 
-	// PB5 - PB7, output mode, max speed 10 MHz, push-pull
+	// PB5 - PB7, output mode, max speed 2 MHz, push-pull
 	GPIOB->CRL &= ~(0xFFF << 20); // Clear CNF5, MODE5, CNF6, MODE6, CNF7, MODE7
-	GPIOB->CRL |= (0b10 << 20); // output mode, max speed 2 MHz, 5
-	GPIOB->CRL |= (0b10 << 24); // output mode, max speed 2 MHz, 6
-	GPIOB->CRL |= (0b10 << 28); // output mode, max speed 2 MHz, 7
+	GPIOB->CRL |= (0x222 << 20);  // Set MODE5, MODE6, MODE7 to output mode, max speed 2 MHz
 
-	// PA0 - PA7, output mode, max speed 10 MHz, push-pull
-	GPIOA->CRL &= ~(0xFFFFFFFF); // Clear CNF0, MODE0, CNF1, MODE1, CNF2, MODE2, CNF3, MODE7
-	GPIOA->CRL |= (0b10 << 0); // output mode, max speed 2 MHz, 0
-	GPIOA->CRL |= (0b10 << 4); // output mode, max speed 2 MHz, 1
-	GPIOA->CRL |= (0b10 << 8); // output mode, max speed 2 MHz, 2
-	GPIOA->CRL |= (0b10 << 12); // output mode, max speed 2 MHz, 3
-	GPIOA->CRL |= (0b10 << 16); // output mode, max speed 2 MHz, 4
-	GPIOA->CRL |= (0b10 << 20); // output mode, max speed 2 MHz, 5
-	GPIOA->CRL |= (0b10 << 24); // output mode, max speed 2 MHz, 6
-	GPIOA->CRL |= (0b10 << 28); // output mode, max speed 2 MHz, 7
+	// PA0 - PA7, output mode, max speed 2 MHz, push-pull
+	GPIOA->CRL &= ~(0xFFFFFFFF);  // Clear CNF0, MODE0, CNF1, MODE1, CNF2, MODE2, CNF3, MODE3, CNF4, MODE4, CNF5, MODE5, CNF6, MODE6, CNF7, MODE7
+	GPIOA->CRL |= 0x22222222;     // Set MODE0, MODE1, MODE2, MODE3, MODE4, MODE5, MODE6, MODE7 to output mode, max speed 2 MHz
 
 	// Perform init sequence: see https://cdn.sparkfun.com/assets/9/5/f/7/b/HD44780.pdf
 	// See pag.
@@ -65,14 +54,7 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
         // PB5 -> E
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
-		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
-		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0
-		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
-		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
+		GPIOA->ODR = (GPIOA->ODR & ~(0xFF)) | (LCD_CMD_FUNCTION_SET | LCD_8B_INTERFACE);
 
 		LCD_trigger_enable_pin();
 	
@@ -81,14 +63,7 @@ void LCD_Init(uint8_t dbWidth)
 
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
-		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-		GPIOA->ODR |= (0x01 << 3); // DB3 = 0
-		GPIOA->ODR |= (0x01 << 2); // DB2 = 0
-		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
-		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
+		GPIOA->ODR = (GPIOA->ODR & ~(0xFF)) | (LCD_CMD_FUNCTION_SET | LCD_8B_INTERFACE);
 
 		LCD_trigger_enable_pin();
 
@@ -97,14 +72,8 @@ void LCD_Init(uint8_t dbWidth)
 
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
-		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-		GPIOA->ODR |= (0x01 << 3); // DB3 = 0
-		GPIOA->ODR |= (0x01 << 2); // DB2 = 0
-		GPIOA->ODR |= (0x01 << 1); // DB1 = 0
-		GPIOA->ODR |= (0x01 << 0); // DB0 = 0
+	
+		GPIOA->ODR = (GPIOA->ODR & ~(0xFF)) | (LCD_CMD_FUNCTION_SET | LCD_8B_INTERFACE);
 
 		LCD_trigger_enable_pin();
 
@@ -112,34 +81,7 @@ void LCD_Init(uint8_t dbWidth)
 		delay_ms(1);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // NOW THE SETTINGS
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        // *  NOW THE SETTINGS
         
         // LCD_Write(0x38, 1);
 
@@ -147,16 +89,7 @@ void LCD_Init(uint8_t dbWidth)
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
 
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR |= (0x01 << 5); // DB5 = 1
-		GPIOA->ODR |= (0x01 << 4); // DB4 = 1
-
-		GPIOA->ODR |= (0x01 << 3); // DB3 = 1 // 1 because 2*16
-		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0 // 0 Because 5 * 8 chars
-		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
-		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
-
+		GPIOA->ODR = (GPIOA->ODR & ~(0xFF)) | (LCD_TWO_LINES | LCD_5X8_FONT);
 		LCD_trigger_enable_pin();
 
         
@@ -165,14 +98,7 @@ void LCD_Init(uint8_t dbWidth)
         
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR &= ~(0x01 << 5); // DB5 = 0
-		GPIOA->ODR &= ~(0x01 << 4); // DB4 = 0
-		GPIOA->ODR |= (0x01 << 3); // DB3 = 1
-		GPIOA->ODR |= (0x01 << 2); // DB2 = 0 // D -> Set the entire display
-		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
-		GPIOA->ODR &= ~(0x01 << 0); // DB0 = 0
+		GPIOA->ODR = (GPIOA->ODR & ~(0xFF)) | (LCD_DISPLAY_ON | LCD_CURSOR_OFF | LCD_CURSOR_NO_BLINK);
 
         
 		LCD_trigger_enable_pin();
@@ -183,14 +109,7 @@ void LCD_Init(uint8_t dbWidth)
         
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR &= ~(0x01 << 5); // DB5 = 0
-		GPIOA->ODR &= ~(0x01 << 4); // DB4 = 0
-		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
-		GPIOA->ODR &= ~(0x01 << 2); // DB2 = 0
-		GPIOA->ODR &= ~(0x01 << 1); // DB1 = 0
-		GPIOA->ODR |= (0x01 << 0); // DB0 = 1
+		GPIOA->ODR = (GPIOA->ODR & ~(0xFF)) | (LCD_CMD_CLEAR_DISP);
 
         
 		LCD_trigger_enable_pin();
@@ -201,41 +120,13 @@ void LCD_Init(uint8_t dbWidth)
         
 		GPIOB->ODR &= ~(0x01 << 7); // RS = 0
 		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-		GPIOA->ODR &= ~(0x01 << 7); // DB7 = 0
-		GPIOA->ODR &= ~(0x01 << 6); // DB6 = 0
-		GPIOA->ODR &= ~(0x01 << 5); // DB5 = 0
-		GPIOA->ODR &= ~(0x01 << 4); // DB4 = 0
-		GPIOA->ODR &= ~(0x01 << 3); // DB3 = 0
-		GPIOA->ODR |= (0x01 << 2); // DB2 = 1
-		GPIOA->ODR |= (0x01 << 1); // DB1 = 1 // I/D = 1: Increment
-		GPIOA->ODR |= (0x01 << 0); // DB0 = 1 // S = 1: Accompanies display shift
+		GPIOA->ODR = (GPIOA->ODR & ~(0xFF)) | (LCD_CMD_RETURN_HOME | LCD_CURSOR_MOVE);
 
 		LCD_trigger_enable_pin();
 
 		// Wait for more than 100 µs
 		delay_ms(1);
 
-
-		GPIOB->ODR |= (0x01 << 7); // RS = 0
-		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-
-		GPIOA->ODR &= ~(0xFF);
-		GPIOA->ODR |= (0x30);
-
-		LCD_trigger_enable_pin();
-	
-		
-		// Wait for more than 100 µs
-		delay_ms(1);
-
-
-		GPIOB->ODR |= (0x01 << 7); // RS = 0
-		GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
-
-		GPIOA->ODR &= ~(0xFF);
-		GPIOA->ODR |= (0x31);
-
-		LCD_trigger_enable_pin();
 	}
 	else if(dbWidth == LCD_4B_INTERFACE)
 	{
@@ -247,6 +138,26 @@ void LCD_Init(uint8_t dbWidth)
 void LCD_Write(uint8_t data, uint8_t isCmd)
 {
 	// Write mode (RW = 0)
+	GPIOB->ODR |= (0x01 << 7); // RS = 0
+	GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+
+	GPIOA->ODR &= ~(0xFF);
+	GPIOA->ODR |= (0x30);
+
+	LCD_trigger_enable_pin();
+
+	
+	// Wait for more than 100 µs
+	delay_ms(1);
+
+
+	GPIOB->ODR |= (0x01 << 7); // RS = 0
+	GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+
+	GPIOA->ODR &= ~(0xFF);
+	GPIOA->ODR |= (data);
+
+	LCD_trigger_enable_pin();
 
 	// Write data/instruction (RS = 1/0)
 

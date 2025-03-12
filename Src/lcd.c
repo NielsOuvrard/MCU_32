@@ -255,14 +255,7 @@ void LCD_Clear(void)
 
 void move_cursor(uint8_t direction)
 {
-	// RS 0
-	// RW 0
-	GPIOB->ODR &= ~(0x01 << 7);
-	GPIOB->ODR &= ~(0x01 << 6);
-	GPIOA->ODR &= ~(0xFF);
-	GPIOA->ODR |= (0x01 << 2); // 00000100
-
-	LCD_trigger_enable_pin();
+	
 }
 
 void shift_display(uint8_t direction)
@@ -272,7 +265,12 @@ void shift_display(uint8_t direction)
 	GPIOB->ODR &= ~(0x01 << 7);
 	GPIOB->ODR &= ~(0x01 << 6);
 	GPIOA->ODR &= ~(0xFF);
-	GPIOA->ODR |= (0x03 << 2); // 00001100
+
+	if (direction == 1) {
+		GPIOA->ODR |= (0x01 << 0); // 00000001
+	} else {
+		GPIOA->ODR &= ~(0x01 << 0); // 00000000
+	}
 
 	LCD_trigger_enable_pin();
 }

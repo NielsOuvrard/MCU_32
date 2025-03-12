@@ -9,46 +9,50 @@
 #include <stdio.h>
 #include <string.h>
 
+#define SCREEN_WIDTH 16
+#define NUMBER_LINES 2
+#define NUMBER_GPIO 4
+
 typedef struct {
-	uint8_t hours;
-	uint8_t minutes;
-	uint8_t seconds;
-} Time;
+    GPIO_TypeDef *port;
+    uint16_t pin;
+    char *name;
+} GPIO_Config;
 
+GPIO_Config gpios[] = {
+    {GPIOC, 13, "LED"},
+    {GPIOA, 11, "Nothing"},
+	{GPIOA, 12, "Nothing"},
+	{GPIOA, 15, "Nothing"}
+};
 
-void increment_time_and_write(Time *time)
+char screen_buffer[32] = {0};
+uint8_t index_display = 0;
+
+void write_one_gpio(GPIO_Config *gpio, bool second_line, uint8_t index)
 {
-	char new_buffer[16];
-	char last_buffer[16];
-	sprintf(last_buffer, "%02d:%02d:%02d", time->hours, time->minutes, time->seconds);
-
-	time->seconds++;
-	if (time->seconds >= 60) {
-		time->seconds = 0;
-		time->minutes++;
-		if (time->minutes >= 60) {
-			time->minutes = 0;
-			time->hours++;
-			if (time->hours >= 24) {
-				time->hours = 0;
-			}
+	char buffer[SCREEN_WIDTH] = {0};
+	sprintf(buffer, "Output %d: %s", index, (gpio->port->ODR & (1 << gpio->pin)) ? "ON" : "OFF");
+	for (int i = 0; i < SCREEN_WIDTH; i++) {
+		if (screen_buffer[i + (second_line * SCREEN_WIDTH)] != buffer[i]) {
+			LCD_Goto_XY(i, second_line);
+			LCD_Write(buffer[i] == 0 ? ' ' : buffer[i], 0);
 		}
 	}
-
-	sprintf(new_buffer, "%02d:%02d:%02d", time->hours, time->minutes, time->seconds);
-	for (int i = 0; i < strlen(new_buffer); i++) {
-		if (new_buffer[i] != last_buffer[i]) {
-			LCD_Goto_XY(i, 0);
-			LCD_Write(new_buffer[i], 0);
-		}
-	}
-	
+	sprintf(screen_buffer + (second_line * SCREEN_WIDTH), buffer);
 }
 
-void fill_str_with_time(char *str, Time time)
+void write_outputs(void)
 {
-	sprintf(str, "%02d:%02d:%02d", time.hours, time.minutes, time.seconds);
+	for (int i = 0; i < NUMBER_LINES; i++) {
+		write_one_gpio(&gpios[(index_display + i) % NUMBER_GPIO], i % 2, ((index_display + i) % NUMBER_GPIO) + 1);
+	}
 }
+
+// Button
+// 400ms -> move the menu
+// 2s -> change the value
+// each output should be a led or a motor
 
 int main(void)
 {
@@ -60,23 +64,19 @@ int main(void)
     change_clk(8);
     LCD_Init(LCD_8B_INTERFACE);
 
-	Time time = {0, 0, 0};
-	{
-		char buffer[16];
-		fill_str_with_time(buffer, time);
-		LCD_Print(buffer);
-	}
-
-
+	int loop = 1;
 
 	/* Application loop forever */
 	while (1)
 	{
-		// LCD_Clear();
-		increment_time_and_write(&time);
+		write_outputs();
+	
+		if (loop % 10 == 0) {
+			index_display += 1;
+		}
 
-		// shift_display(-1);
 		GPIOC->ODR ^= (1 << 13);
 		delay_ms(1000);
+		loop++;
 	}
 }

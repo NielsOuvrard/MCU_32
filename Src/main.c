@@ -18,7 +18,7 @@ typedef struct {
 
 void increment_time_and_write(Time *time)
 {
-	char buffer[16];
+	char new_buffer[16];
 	char last_buffer[16];
 	sprintf(last_buffer, "%02d:%02d:%02d", time->hours, time->minutes, time->seconds);
 
@@ -35,12 +35,11 @@ void increment_time_and_write(Time *time)
 		}
 	}
 
-	sprintf(buffer, "%02d:%02d:%02d", time->hours, time->minutes, time->seconds);
-	for (int i = 0; i < strlen(buffer); i++) {
-		if (buffer[i] != last_buffer[i]) {
+	sprintf(new_buffer, "%02d:%02d:%02d", time->hours, time->minutes, time->seconds);
+	for (int i = 0; i < strlen(new_buffer); i++) {
+		if (new_buffer[i] != last_buffer[i]) {
 			LCD_Goto_XY(i, 0);
-			LCD_Write(buffer[i], 0);
-			break;
+			LCD_Write(new_buffer[i], 0);
 		}
 	}
 	
@@ -61,10 +60,12 @@ int main(void)
     change_clk(8);
     LCD_Init(LCD_8B_INTERFACE);
 
-	char buffer[16];
 	Time time = {0, 0, 0};
-	fill_str_with_time(buffer, time);
-	LCD_Print(buffer);
+	{
+		char buffer[16];
+		fill_str_with_time(buffer, time);
+		LCD_Print(buffer);
+	}
 
 
 

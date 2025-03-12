@@ -96,4 +96,10 @@ uint8_t LCD_Read(uint8_t isData);
 
 void LCD_Print(const char *str);
 
+void LCD_Clear(void);
+void move_cursor(uint8_t direction);
+void shift_display(uint8_t direction);
+void return_home(void);
+void LCD_Goto_XY (int x, int y);
+
 #endif /* LCD_H_ */

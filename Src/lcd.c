@@ -193,8 +193,12 @@ void LCD_Init(uint8_t dbWidth)
 // Write sequence
 void LCD_Write(uint8_t data, uint8_t isCmd)
 {
-	GPIOB->ODR |= (0x01 << 7); // RS = 1
-	GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
+    if (isCmd) {
+        GPIOB->ODR &= ~(0x01 << 7); // RS = 0 for command
+    } else {
+        GPIOB->ODR |= (0x01 << 7); // RS = 1 for data
+    }
+    GPIOB->ODR &= ~(0x01 << 6); // R/W = 0
 
 	GPIOA->ODR &= ~(0xFF);
 	GPIOA->ODR |= (data);
@@ -237,21 +241,59 @@ uint8_t LCD_Read(uint8_t isData)
 }
 
 
+void LCD_Clear(void)
+{
+	// RS 0
+	// RW 0
+	GPIOB->ODR &= ~(0x01 << 7);
+	GPIOB->ODR &= ~(0x01 << 6);
+	GPIOA->ODR &= ~(0xFF);
+	GPIOA->ODR |= (0x01 << 0); // 00000001
+
+	LCD_trigger_enable_pin();
+}
+
+void move_cursor(uint8_t direction)
+{
+	// RS 0
+	// RW 0
+	GPIOB->ODR &= ~(0x01 << 7);
+	GPIOB->ODR &= ~(0x01 << 6);
+	GPIOA->ODR &= ~(0xFF);
+	GPIOA->ODR |= (0x01 << 2); // 00000100
+
+	LCD_trigger_enable_pin();
+}
+
+void shift_display(uint8_t direction)
+{
+	// RS 0
+	// RW 0
+	GPIOB->ODR &= ~(0x01 << 7);
+	GPIOB->ODR &= ~(0x01 << 6);
+	GPIOA->ODR &= ~(0xFF);
+	GPIOA->ODR |= (0x03 << 2); // 00001100
+
+	LCD_trigger_enable_pin();
+}
+
+void return_home(void)
+{
+	// RS 0
+	// RW 0
+	GPIOB->ODR &= ~(0x01 << 7);
+	GPIOB->ODR &= ~(0x01 << 6);
+	GPIOA->ODR &= ~(0xFF);
+	GPIOA->ODR |= (0x01 << 0); // 00000001
+
+	LCD_trigger_enable_pin();
+}
+
 void LCD_Goto_XY (int x, int y)
 {
-    // RS 0
-    // RW 0
-    GPIOB->ODR &= ~(0x01 << 7);
-    GPIOB->ODR &= ~(0x01 << 6);
-
-    // DB7 1
-    // adress to the cursor (0x00 -> 0x0F) (0x40 -> 0x4F)
-    uint8_t value = 0b10000000;
-    value &= x;
-    if (y) {
-        value &= 0x40;
-    }
-
+	uint8_t address = (y == 0) ? 0x80 : 0xC0;
+	address += x;
+	LCD_Write(address, 1);
 }
 
 void LCD_Print(const char *str)
